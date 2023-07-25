@@ -63,3 +63,5 @@ yaml
 The ports section maps port 5432 of the container to port 5432 on the host. Port 5432 is the default port that PostgreSQL listens on, so this allows you to access the PostgreSQL database from your local machine.
 
 With this updated docker-compose.yml file, you can now run the PostgreSQL container using the following command:
+docker-compose up -d
+
