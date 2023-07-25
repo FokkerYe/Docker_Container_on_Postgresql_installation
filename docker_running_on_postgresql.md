@@ -1,4 +1,20 @@
+```
+version: '3.8'
 
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres-container
+    restart: always
+    environment:
+      POSTGRES_USER: your_username
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: your_database_name
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+```
 
 ## Docker Compose Configuration for PostgreSQL
 
