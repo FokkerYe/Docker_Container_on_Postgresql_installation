@@ -1,6 +1,4 @@
-Certainly! If you want to create a Markdown file (.md) that includes the description of the docker-compose.yml file in GitHub-flavored Markdown format, here's the content:
 
-markdown
 
 ## Docker Compose Configuration for PostgreSQL
 
