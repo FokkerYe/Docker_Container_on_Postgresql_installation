@@ -1,0 +1,219 @@
+docker network create ayk_net
+docker network ls
+docker images | grep httpd
+docker run -d -p 8080:80 --name apache_web httpd
+docker run -d -p 8082:80 --name nginx_web nginx
+docker run -itd --name alpine alpine 
+docker run -itd --name ubuntu ubuntu
+docker ps
+host name 192.168.100.3
+---
+network 
+docker network connect ayk_net nginx_web
+docker network connect ayk_net alpine
+docker network conect ayk_net ubuntu
+--
+docker exec -it alpine sh -c "ping -c 3 nginx_web"
+docker exec -it alpine sh -c "ping -c 3 ubuntu"
+
+docker exec -it ubuntu sh -c "ping -c 3 nginx_web"
+docker exec -it ubuntu /bin/sh
+======
+docker exec -it alpine sh -c "ping -c 3 apache_web"
+
+====
+docker network disconnect ayk_net ubuntu
+====
+docker network ls
+=======
+ubuntu,alpine,nginx =====one bridge netowrk ======apache not bridge network lab explaination
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+one only container using
+host-only network
+#host network
+docker run --rm -d --network host --name Nginx nginx
+docker ps
+docker network ls
+ip a | grep eth0
+docker ps
+###############################
+######################################################
+overlay network (host not same muti host used) two hosts used
+at least docker two host
+#docker network ls
+28
+docker swarm init
+docker swarm init --advertise-addr=192.168.0.28
+genteart key
+docker run -it --network=ayk_net alpine
+ifconfig
+ping 10.0.1.8
+--
+27
+next host 
+docker network ls
+docker network create --driver=overlay --attachable ayk_net
+docker network ls
+generate key
+docker run -it --network=ayk_net alpine
+ifconfig
+ping 10.0.1.6
+
+
+-------
+IP VLAN Network
+docker network ls
+ip a
+docker network create -d ipvlan --subnet=192.168.100.0/24 -gateway=192.168.100.1 -o ipvlan_mode -o parent=enp0s3 ipvlan_net
+docker run -it --name ipvlan_test alpine --network ipvlan_net alpine/bin/sh
+ip a
+docker run -it --name ipvlan_test2 --network ipvlan_net alpine /bin/sh
+ip a
+ping 192.168.100.2 -c 3
+=======================
+ MACvlan Network (linux host using)
+docker network ls
+ip a
+enp0s3
+docker network create -d macvlan --subnet=192.168.100.0/24 --gateway=192.168.100.1 
+ -o parnet=enp0s3 macvlan_net
+docker network ls
+docker network rm ipvlan_net
+docker network ls
+docker run  --dit --network=macvlan_net alpine /bin/sh
+docker ps 
+clear
+docker inspect ac5
+docker run -dit --network=macvlan_net --name alpine2 alpine /bin/sh
+ip a
+docker exec alpine2 ip addr show eth0
+###################
+#################################################
+Private Registry
+docker images
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
+docker ps
+curl -X GET http://localhost:5000/v2/_catalog
+docker images
+docker tag httpd localhost:5000/apache2
+docker images
+docker push localhost:5000/apache2
+docker rmi localhost:5000/apache2
+docker images
+docker pull localhost:5000/apache2
+docker images
+================================================
+Private Registy2
+1.nano /etc/docker/daemon.json
+{
+"insecure-registries": {192.168.100.1:5000"}"
+}
+
+2.ip a
+3.cat /etc/docker/daemon.json
+4.sudo systemctl restart docker
+5.other machine
+6.docker images
+6.ping 192.168.100.2
+7.docker pull 192.168.100.1:5000/apache2
+8.docker images
+9.docker tag httpd 192.168.100.1:5000/webserver
+10.docker push 192.168.100.1:5000/webserver
+other machine
+11.sudo vi /etc/docker daemon.json
+{
+"insecure-registries": {192.168.100.1:5000"}"
+}
+12.sudo systemctl restart docker
+
+13.docker pull 192.168.100.1:500/webserver
+=======================================
+Private registry 3
+
+Road to Devops Engineer
+
+Operating system
+window server,ubuntu,redhat
+=========
+web server
+nginx,tomcat,apache,IIS
+============
+Container
+docker
+========
+cloud provider
+AWS
+=============
+Gitlab & GitHub Action & Jenkis
+=====================
+https://devops-myanmar.gitbook.io/docker-quick-start
+===========
+orchentation
+scale up/down
+automation,k8s,mesos,openshift
+===========
+docker swarm init --advertise--addr 192.168.0.28
+
+
+    docker swarm join --token SWMTKN-1-3jhr56145hyh65rm7amctnwoz5dgalun9dpzzxygyoeincp4t7-eu8r80dz50ap1b8qn311bu2fa 192.168.0.28:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+$ docker swarm join-token worker
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-3jhr56145hyh65rm7amctnwoz5dgalun9dpzzxygyoeincp4t7-eu8r80dz50ap1b8qn311bu2fa 192.168.0.28:2377
+
+[node1] (local) root@192.168.0.28 ~
+$ docker swarm join-token manager
+To add a manager to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-3jhr56145hyh65rm7amctnwoz5dgalun9dpzzxygyoeincp4t7-4r66margiu490h98ssf30qn20 192.168.0.28:2377
+
+[node1] (local) root@192.168.0.28 ~
+$ ==============
+
+server {
+    listen 443 ssl;
+    server_name ycb.com;
+
+    ssl_certificate /etc/nginx/ssl/your_certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/your_private_key.key;
+
+    location / {
+        proxy_pass http://192.168.100.2;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name www.ycb.com;
+
+    ssl_certificate /etc/nginx/ssl/your_certificate.crt;
+    ssl_certificate_key /etc/nginx/ssl/your_private_key.key;
+
+    location / {
+        proxy_pass http://192.168.100.3;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+
+==========
+https://mhatsu.to/what-is-serverless/
+https://medium.com/@kunnchan3/10-git-commands-in-myanmar-%E1%80%A1%E1%80%9E%E1%80%AF%E1%80%B6%E1%80%B8%E1%80%90%E1%80%8A%E1%80%BA%E1%80%B7%E1%80%9E%E1%80%B1%E1%80%AC-git-commands-10-592ab3e41248
+
+
+
+
+
+
+
+
+
+
